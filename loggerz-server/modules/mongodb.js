@@ -1,126 +1,66 @@
-/* 
- * db (Module)
- * Description : Database handling module allows to get, insert, update and delete
- * data from the the db. Also provides simple connection function to mongodb.
- */
+var db = require('../services/mongodbService')
+var mongodb = require('mongodb')
 
-// Imports
-var mongodb = require('mongodb');
+const getLogs = async (req, res) => {
+    const page = parseInt(req.query.page ?? 1)
+    const logsPerPage = parseInt(req.query.logsPerPage ?? process.env.DEFAULT_LOGS_PER_PAGE)
 
-// Db credentials from configuration file
-var config = {
-    db: {
-        url: 'mongodb://root:example@mongo:27017?authMechanism=DEFAULT',
-        name: 'logs'
-    }
-};
+    const collection = await db.loadCollection('logs')
+    const collectionSize = await collection.count()
+    
+    res.set('Has-Next-Page', collectionSize > page * logsPerPage + logsPerPage ? 1 : 0)
+    res.set('Total-Log-Count', collectionSize)
+    const logs = await collection.find({}).skip(page * logsPerPage).limit(logsPerPage).toArray()
 
-/**
- * DESCRIPTION: Connects to the database and retrieves a certain collection.
- * Used in every other method.
- * ARGS:
- * - collection : collection to be to returned from the db
- */
-var loadCollection = async (collection) => {
-    // Create connection
-    const client = await mongodb.MongoClient.connect(config.db.url);
+    return logs
+}
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("Connected successfully to server");
+const getLog = async (req, res) => {
+    const log = await db.getDocument('logs', {_id: new mongodb.ObjectId(req.params.id)})
 
-    // Return 'collection' passed as arg
-    return client.db(config.db.name).collection(collection);
-};
+    return log
+}
 
-/**
- * DESCRIPTION: Inserts a document in a collection.
- * Returns the inserted document.
- * ARGS:
- * - collectionName : collection where to insert new doc
- * - newDocument : new doc to be inserted into the db
- */
-var insertDocument = async (collectionName, newDocument) => {
-    // Loads collection
-    const collection = await loadCollection(collectionName);
-    // Inserts document into loaded collection
-    const dID = await collection.insertOne(newDocument);
-    // Returns document
-    return dID.insertedId._id;
-};
+const getNextLog = async (req, res) => {
+    const collection = await db.loadCollection('logs')
+    const next = await collection.findOne({_id: {$gt:new mongodb.ObjectId(req.params.id)}})
 
-/**
- * DESCRIPTION: Gets document from collection according to
- * a search param passed as argument
- * ARGS:
- * - collectionName : collection where to look for the doc
- * - search : search param(s) used to find the doc
- */
-var getDocument = async (collectionName, search) => {
-    // Loads collection
-    const collection = await loadCollection(collectionName);
-    // Returns wanted doc as result of find
-    return await collection.findOne(search);
-};
+    return next
+}
 
-/**
- * DESCRIPTION: Updates a document matching the search
- * parameters from a certain collection
- * ARGS:
- * - collectionName : collection where to look for the doc
- * - search : search param(s) used to find the doc
- * - updatedDocument : new values to be updated in the doc
- */ 
-var updateDocument = async (collectionName, search, updatedDocument) => {
-    // Loads collection
-    const collection = await loadCollection(collectionName);
-    // Turns collection into array
-    const result = await collection.find().toArray();
-    // If collection not empty
-    if (result.length > 0)
-        // Update wanted document 
-        await collection.updateOne(search, {$set: updatedDocument}, {upsert: true});
-};
+const getPreviousLog = async (req, res) => {
+    const collection = await db.loadCollection('logs')
+    const previous = await collection.findOne({_id: {$lt:new mongodb.ObjectId(req.params.id)}}, {sort: {_id: -1}})
 
-/**
- * DESCRIPTION: Deletes one document matching the search
- * parameters from a certain collection
- * ARGS:
- * - collectionName : collection where to look for the doc
- * - search : search param(s) used to find the doc
- */ 
-var deleteDocument = async (collectionName, search) => {
-    // Loads collection
-    const collection = await loadCollection(collectionName);
-    // Turns collection into array and looks for document
-    const result = await collection.find(search).toArray();
-    // If document found in collection
-    if (result.length > 0)
-        // Delete document
-        await collection.deleteOne(search);
-};
+    return previous
+}
 
-/**
- * DESCRIPTION: Deletes all documents matching the search
- * parameters from a certain collection
- * ARGS:
- * - collectionName : collection where to look for the doc
- * - search : search param(s) used to find the doc
- */ 
-var deleteAllDocuments = async (collectionName, search) => {
-    // Loads collection
-    const collection = await loadCollection(collectionName);
-    // Turns collection into array and looks for document
-    const result = await collection.find(search).toArray();
-    // Maps throught the array deleting all the docs
-    result.map(async r => {
-        await collection.deleteOne(search);
-    });
-};
+const addLog = async (req, res) => {
+    const log = await db.insertDocument('logs', req.body)
 
-// Export functions
-exports.loadCollection = loadCollection;
-exports.insertDocument = insertDocument;
-exports.getDocument = getDocument;
-exports.updateDocument = updateDocument;
-exports.deleteDocument = deleteDocument;
-exports.deleteAllDocuments = deleteAllDocuments;
+    return log
+}
+
+const getOptions = async (req, res) => {
+    const collection = await db.loadCollection('logs')
+    const options = await collection.distinct(req.body.type)
+
+    return options
+}
+
+const updateLog = async (req, res) => {
+    return 0
+}
+
+const deleteLog = async (req, res) => {
+    return 0
+}
+
+exports.getLogs = getLogs;
+exports.getLog = getLog;
+exports.getNextLog = getNextLog;
+exports.getPreviousLog = getPreviousLog;
+exports.addLog = addLog;
+exports.getOptions = getOptions;
+exports.updateLog = updateLog;
+exports.deleteLog = deleteLog;

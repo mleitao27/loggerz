@@ -1,58 +1,65 @@
-const express = require('express');
-var db = require('../modules/mongodb');
-var mongodb = require('mongodb');
+const express = require('express')
+var db = require('../modules/mongodb')
 
-const router = express.Router();
+const router = express.Router()
 
 // Get all logs
 router.get('/', async (req, res) => {
-    const collection = await db.loadCollection('logs');
-    res.status(200).send(await collection.find({}).toArray());
+    const logs = await db.getLogs(req, res)
+    res.status(200).send(logs)
 });
 
 // Get log by id
 router.get('/:id', async (req, res) => {
-    const log = await db.getDocument('logs', {_id: new mongodb.ObjectId(req.params.id)})
+    const log = await db.getLog(req, res)
     if(log)
-        res.status(200).send(log);
+        res.status(200).send(log)
     else
-        res.status(404).send();
+        res.status(404).send()
 });
 
 // Get next log
 router.get('/next/:id', async (req, res) => {
-    const collection = await db.loadCollection('logs');
-    const next = await collection.find({_id: {$gt:new mongodb.ObjectId(req.params.id)}}).limit(1).toArray()
-    if(next.length)
-        res.status(200).send(next[0]);
+    const next = await db.getNextLog(req, res)
+    if(next)
+        res.status(200).send(next)
     else
-        res.status(404).send();
+        res.status(404).send()
 });
 
 // Get previous log
 router.get('/previous/:id', async (req, res) => {
-    const collection = await db.loadCollection('logs');
-    const previous = await collection.find({_id: {$lt:new mongodb.ObjectId(req.params.id)}}).limit(1).toArray()
-    if(previous.length)
-        res.status(200).send(previous[0]);
+    const previous = await db.getPreviousLog(req, res)
+    if(previous)
+        res.status(200).send(previous)
     else
-        res.status(404).send();
+        res.status(404).send()
 });
 
 // Add new log
 router.post('/', async (req, res) => {
-    await db.insertDocument('logs', req.body)
-    res.status(200).send(req.body);
+    const log = await db.addLog(req, res)
+    res.status(200).send(log)
+});
+
+// Get field options
+router.post('/options', async (req, res) => {
+    const options = await db.getOptions(req, res)
+    res.status(200).send(options)
 });
 
 // Update log
 router.put('/:id', async (req, res) => {
-    res.status(200).send('update');
+    const log = await db.updateLog(req, res)
+
+    res.status(200).send('update')
 });
 
 // Delete log
-router.delete('/:id', (req, res) => {
-    res.status(200).send('destroy');
+router.delete('/:id', async (req, res) => {
+    const log = await db.deleteLog(req, res)
+
+    res.status(200).send('destroy')
 });
 
 module.exports = router;

@@ -1,12 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config()
 
 const app = express();
 
+const corsOptions = {
+    exposedHeaders: ['Has-Next-Page', 'Total-Log-Count'],
+}
+
 // Middleware
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 const logs = require('./routes/logs');
 
