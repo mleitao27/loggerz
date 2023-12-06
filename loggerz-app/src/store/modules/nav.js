@@ -1,7 +1,7 @@
 export default {
   state: {
     page: 0,
-    logsPerPage: 2,
+    logsPerPage: 10,
     hasNextPage: false,
     totalLogCount: 0,
   },

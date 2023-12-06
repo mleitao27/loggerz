@@ -16,31 +16,39 @@ export default {
       state.log = log
     },
     SET_FILTER_OPTIONS(state, data) {
-      if(!state.filterOptions) state.filterOptions = {}
+      if (!state.filterOptions) state.filterOptions = {}
       state.filterOptions[data.type] = data.options
     },
     SET_FILTERS(state, data) {
-      if(!state.filters) state.filters = {}
+      if (!state.filters) state.filters = {}
 
-      if(state.filters[data.type] && state.filters[data.type].length && state.filters[data.type].includes(data.option)) {
+      if (state.filters[data.type] && state.filters[data.type].length && state.filters[data.type].includes(data.option)) {
         const index = state.filters[data.type].indexOf(data.option);
         state.filters[data.type].splice(index, 1);
       }
-      else if(!state.filters[data.type])
+      else if (!state.filters[data.type])
         state.filters[data.type] = [data.option]
-      else
-        state.filters[data.type].push(data.option )
+      else 
+        state.filters[data.type].push(data.option)
+    },
+    SET_SEARCH(state, data) {
+      if (!state.filters) state.filters = {}
+      state.filters.message = data
+    },
+    CLEAR_FILTERS(state, data) {
+      state.filters[data] = []
     },
   },
   actions: {
-    fetchLogs({ commit }) {
+    fetchLogs({ commit, state }) {
       return axios
         .get(
           'http://localhost:5001/api/v1/logs',
           {
             params: {
               page: store.state.nav.page,
-              logsPerPage: store.state.nav.logsPerPage
+              logsPerPage: store.state.nav.logsPerPage,
+              filters: state.filters
             }
           }
         )
@@ -56,7 +64,7 @@ export default {
     fetchLog({ commit }, id) {
       return axios
         .get('http://localhost:5001/api/v1/logs/' + id)
-        .then(({data}) => {
+        .then(({ data }) => {
           commit('SET_LOG', data)
         })
         .catch((e) => {
@@ -66,7 +74,7 @@ export default {
     fetchNextLog({ commit }, id) {
       return axios
         .get('http://localhost:5001/api/v1/logs/next/' + id)
-        .then(({data}) => {
+        .then(({ data }) => {
           commit('SET_LOG', data)
         })
         .catch((e) => {
@@ -76,7 +84,7 @@ export default {
     fetchPreviousLog({ commit }, id) {
       return axios
         .get('http://localhost:5001/api/v1/logs/previous/' + id)
-        .then(({data}) => {
+        .then(({ data }) => {
           commit('SET_LOG', data)
         })
         .catch((e) => {
@@ -86,8 +94,8 @@ export default {
     fetchFilterOptions({ commit }, type) {
       return axios
         .post('http://localhost:5001/api/v1/logs/options/', { type })
-        .then(({data}) => {
-          commit('SET_FILTER_OPTIONS', {options: data, type})
+        .then(({ data }) => {
+          commit('SET_FILTER_OPTIONS', { options: data, type })
         })
         .catch((e) => {
           console.log(e)
@@ -95,6 +103,12 @@ export default {
     },
     setFilters({ commit }, data) {
       commit('SET_FILTERS', data)
+    },
+    setSearch({ commit }, data) {
+      commit('SET_SEARCH', data)
+    },
+    clearFilters({ commit }, data) {
+      commit('CLEAR_FILTERS', data)
     }
   },
   getters: {}

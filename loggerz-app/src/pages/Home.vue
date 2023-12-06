@@ -1,6 +1,9 @@
 <template>
     <div class="bg-slate-300 min-h-screen p-6">
         <div v-if="logs">
+            <div class="w-full flex items-center justify-end">
+                <SearchBox />
+            </div>
             <div class="grid grid-cols-4 gap-4 bg-slate-500 p-2 rounded-t">
                 <div class="flex items-center"><p class="mr-2">Level</p><Filter type="level"/></div>
                 <p>Message</p>
@@ -49,10 +52,12 @@
 import { onMounted, computed } from 'vue'
 import { useStore } from 'vuex'
 import Filter from '../components/Filter.vue'
+import SearchBox from '../components/SearchBox.vue'
 
 export default {
     components: {
-        Filter
+        Filter,
+        SearchBox
     },
     setup() {
         const store = useStore()

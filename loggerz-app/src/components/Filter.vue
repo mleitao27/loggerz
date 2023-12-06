@@ -6,6 +6,7 @@
             src="../assets/filter.svg"
             alt="filter"
         >
+        <div v-if="isFiltered" class="w-2 h-2 bg-slate-300 rounded -ml-1"/>
         <div class="relative ml-2">
             <div v-if="showDrawer" class="absolute bg-slate-100 rounded p-2 shadow-xl border border-slate-200 w-max">
                 <div 
@@ -30,25 +31,50 @@
                         {{ option }}
                     </p>
                 </div>
-                <div
-                    class="
-                        px-2
-                        py-1
-                        bg-slate-500
-                        rounded-lg
-                        text-white
-                        text-center
-                        text-sm w-max
-                        ml-auto
-                        mt-4
-                        cursor-pointer
-                        transform
-                        hover:translate-x-px
-                        hover:-translate-y-px
-                    "
-                    @click="applyFilters"
-                >
-                    Apply
+                <div class="grid grid-cols-2 gap-2">
+                    <div
+                        class="
+                            w-full
+                            px-2
+                            py-1
+                            bg-slate-300
+                            text-slate-500
+                            rounded-lg
+                            text-white
+                            text-center
+                            text-sm w-max
+                            ml-auto
+                            mt-4
+                            cursor-pointer
+                            transform
+                            hover:translate-x-px
+                            hover:-translate-y-px
+                        "
+                        @click="clearFilters"
+                    >
+                        Clear
+                    </div>
+                    <div
+                        class="
+                            w-full
+                            px-2
+                            py-1
+                            bg-slate-500
+                            rounded-lg
+                            text-white
+                            text-center
+                            text-sm w-max
+                            ml-auto
+                            mt-4
+                            cursor-pointer
+                            transform
+                            hover:translate-x-px
+                            hover:-translate-y-px
+                        "
+                        @click="applyFilters"
+                    >
+                        Apply
+                    </div>
                 </div>
             </div>
         </div>
@@ -93,13 +119,25 @@
                 showDrawer.value = false
             }
 
+            const clearFilters = async () => {
+                await store.dispatch('clearFilters', props.type)
+                await store.dispatch('fetchLogs')
+                showDrawer.value = false
+            }
+
+            const isFiltered = computed(() => {
+                return filters.value && filters.value.length
+            })
+
             return {
                 openFilterOptions,
                 options,
                 showDrawer,
                 select,
                 filters,
-                applyFilters
+                applyFilters,
+                isFiltered,
+                clearFilters
             }
         }
     }

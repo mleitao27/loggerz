@@ -4,13 +4,19 @@ var mongodb = require('mongodb')
 const getLogs = async (req, res) => {
     const page = parseInt(req.query.page ?? 1)
     const logsPerPage = parseInt(req.query.logsPerPage ?? process.env.DEFAULT_LOGS_PER_PAGE)
+    const filters = req.query.filters
+    const findOptions = {}
+
+    if(filters?.level) findOptions['level'] = {$in: filters.level}
+    if(filters?.component) findOptions['component'] = {$in: filters.component}
+    if(filters?.message) findOptions['message'] = new RegExp(`.*${filters.message}.*`);
 
     const collection = await db.loadCollection('logs')
     const collectionSize = await collection.count()
     
     res.set('Has-Next-Page', collectionSize > page * logsPerPage + logsPerPage ? 1 : 0)
     res.set('Total-Log-Count', collectionSize)
-    const logs = await collection.find({}).skip(page * logsPerPage).limit(logsPerPage).toArray()
+    const logs = await collection.find(findOptions).skip(page * logsPerPage).limit(logsPerPage).toArray()
 
     return logs
 }
