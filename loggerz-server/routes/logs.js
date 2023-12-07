@@ -1,16 +1,17 @@
 const express = require('express')
-var db = require('../modules/mongodb')
+var db = require('../modules/' + process.env.DB_MODULE)
+var auth = require('../middleware/authenticate')
 
 const router = express.Router()
 
 // Get all logs
-router.get('/', async (req, res) => {
+router.get('/', auth.authenticateToken, async (req, res) => {
     const logs = await db.getLogs(req, res)
     res.status(200).send(logs)
 });
 
 // Get log by id
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth.authenticateToken, async (req, res) => {
     const log = await db.getLog(req, res)
     if(log)
         res.status(200).send(log)
@@ -19,7 +20,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Get next log
-router.get('/next/:id', async (req, res) => {
+router.get('/next/:id', auth.authenticateToken, async (req, res) => {
     const next = await db.getNextLog(req, res)
     if(next)
         res.status(200).send(next)
@@ -28,7 +29,7 @@ router.get('/next/:id', async (req, res) => {
 });
 
 // Get previous log
-router.get('/previous/:id', async (req, res) => {
+router.get('/previous/:id', auth.authenticateToken, async (req, res) => {
     const previous = await db.getPreviousLog(req, res)
     if(previous)
         res.status(200).send(previous)
@@ -37,26 +38,26 @@ router.get('/previous/:id', async (req, res) => {
 });
 
 // Add new log
-router.post('/', async (req, res) => {
+router.post('/', auth.authenticateToken, async (req, res) => {
     const log = await db.addLog(req, res)
     res.status(200).send(log)
 });
 
 // Get field options
-router.post('/options', async (req, res) => {
+router.post('/options', auth.authenticateToken, async (req, res) => {
     const options = await db.getOptions(req, res)
     res.status(200).send(options)
 });
 
 // Update log
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth.authenticateToken, async (req, res) => {
     const log = await db.updateLog(req, res)
 
     res.status(200).send('update')
 });
 
 // Delete log
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth.authenticateToken, async (req, res) => {
     const log = await db.deleteLog(req, res)
 
     res.status(200).send('destroy')

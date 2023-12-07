@@ -2,7 +2,7 @@ var db = require('../services/mongodbService')
 var mongodb = require('mongodb')
 
 const getLogs = async (req, res) => {
-    const page = parseInt(req.query.page ?? 1)
+    const page = parseInt(req.query.page ?? 0)
     const logsPerPage = parseInt(req.query.logsPerPage ?? process.env.DEFAULT_LOGS_PER_PAGE)
     const filters = req.query.filters
     const findOptions = {}
@@ -16,7 +16,7 @@ const getLogs = async (req, res) => {
     
     res.set('Has-Next-Page', collectionSize > page * logsPerPage + logsPerPage ? 1 : 0)
     res.set('Total-Log-Count', collectionSize)
-    const logs = await collection.find(findOptions).skip(page * logsPerPage).limit(logsPerPage).toArray()
+    const logs = await collection.find().skip(page * logsPerPage).limit(logsPerPage).toArray()
 
     return logs
 }
