@@ -10,7 +10,7 @@ import VueCookies from 'vue-cookies'
 axios.interceptors.request.use((config) => {
   const token = VueCookies.get('token')
   if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
+    config.headers['Authorization'] = `Bearer ${token}`
   }
   return config
 })
@@ -21,7 +21,7 @@ axios.interceptors.response.use((response) => {
   return response
 }, (error) => {
   if(error.response.status === 401 || error.response.status === 403)
-    axios.post('http://localhost:5001/api/v1/auth/token/', { username: process.env.VUE_APP_USERNAME })
+    axios.post('http://localhost:5001/api/v1/auth/token/', { username: import.meta.env.VITE_USERNAME })
     .then(({ data }) => {
       VueCookies.set('token', data.token)
       location.reload()

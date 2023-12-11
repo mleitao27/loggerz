@@ -26,7 +26,7 @@ var loadCollection = async (collection) => {
     const client = await mongodb.MongoClient.connect(config.db.url);
 
     await client.db("admin").command({ ping: 1 });
-    console.log("Connected successfully to server");
+    // console.log("Connected successfully to server");
 
     // Return 'collection' passed as arg
     return client.db(config.db.name).collection(collection);
