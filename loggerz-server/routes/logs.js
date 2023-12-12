@@ -46,7 +46,10 @@ router.post('/', auth.authenticateToken, async (req, res) => {
 // Get field options
 router.post('/options', auth.authenticateToken, async (req, res) => {
     const options = await db.getOptions(req, res)
-    res.status(200).send(options)
+    if(options && options.length)
+        res.status(200).send(options)
+    else
+        res.status(404).send()
 });
 
 // Update log
