@@ -16,7 +16,7 @@ const getLogs = async (req, res) => {
     
     res.set('Has-Next-Page', collectionSize > page * logsPerPage + logsPerPage ? 1 : 0)
     res.set('Total-Log-Count', collectionSize)
-    const logs = await collection.find().skip(page * logsPerPage).limit(logsPerPage).toArray()
+    const logs = await collection.find(findOptions).skip(page * logsPerPage).limit(logsPerPage).toArray()
 
     return logs
 }
